@@ -23,6 +23,15 @@
 - Windows 10 / 11
 - 开发需要 Node.js 18+（推荐 20）与 npm
 
+## 下载安装（免开发）
+
+前往 [Releases 页面](https://github.com/Ayh2007/calendar-reminder/releases/latest) 下载：
+
+- `CalendarReminder-Setup-1.0.0.exe`：安装版
+- `CalendarReminder-Portable-1.0.0.exe`：绿色便携版
+
+> GitHub 会把附件名中的中文替换为短横线，因此发布到 Releases 上的文件名使用英文；本地 `npm run build` 生成的文件仍是中文名。
+
 ## 快速开始
 
 ```bash
