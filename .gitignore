@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+npm-debug.log*
+
+# 冒烟测试产物
+smoke.png
+src/main/smoke.png
+
+# 系统文件
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/

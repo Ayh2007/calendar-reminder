@@ -1,0 +1,59 @@
+{
+  "name": "calendar-reminder",
+  "version": "1.0.0",
+  "description": "轻量桌面日历行程与每日提醒应用，支持开机自启、定点提醒与计划管理",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "icon": "node scripts/generate-icon.js",
+    "build": "electron-builder --win nsis portable",
+    "build:installer": "electron-builder --win nsis",
+    "build:portable": "electron-builder --win portable"
+  },
+  "keywords": [
+    "electron",
+    "calendar",
+    "reminder",
+    "schedule",
+    "todo",
+    "autostart"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.trae.calendarreminder",
+    "productName": "行程日历提醒",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
+      "!**/smoke.png"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "行程日历提醒"
+    },
+    "portable": {
+      "artifactName": "${productName}-便携版-${version}.${ext}"
+    },
+    "artifactName": "${productName}-安装包-${version}.${ext}"
+  }
+}
