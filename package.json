@@ -1,6 +1,6 @@
 {
   "name": "calendar-reminder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "轻量桌面日历行程与每日提醒应用，支持开机自启、定点提醒与计划管理",
   "main": "src/main/main.js",
   "scripts": {
