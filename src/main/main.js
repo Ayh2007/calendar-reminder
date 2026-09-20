@@ -142,6 +142,26 @@ function setupSmokeHooks(win) {
         failed = true;
         console.error('[SMOKE] 截图失败:', err);
       }
+      // 验证即将到来区域与倒计时标签
+      try {
+        const check = await win.webContents.executeJavaScript(
+          "(() => {" +
+          "  const d = document.querySelector('.upcoming-divider');" +
+          "  const items = document.querySelectorAll('.upcoming-item');" +
+          "  const badges = document.querySelectorAll('.countdown-badge');" +
+          "  return JSON.stringify({ divider: !!d, items: items.length, badges: badges.length, texts: Array.from(badges).map(b => b.textContent) });" +
+          "})()"
+        );
+        console.log('[SMOKE] 即将到来: ' + check);
+        const parsed = JSON.parse(check);
+        if (!parsed.divider || parsed.items === 0 || parsed.badges === 0) {
+          failed = true;
+          console.error('[SMOKE] 即将到来区域缺失');
+        }
+      } catch (err) {
+        failed = true;
+        console.error('[SMOKE] DOM 验证失败:', err);
+      }
       console.log(failed ? '[SMOKE] FAILED' : '[SMOKE] OK');
       app.exit(failed ? 1 : 0);
     }, 2800);

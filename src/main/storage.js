@@ -145,12 +145,16 @@ function seedDemo() {
   const today = new Date();
   const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
   const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+  const inFiveDays = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5);
+  const inTenDays = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 10);
   data.plans = [
     { id: crypto.randomUUID(), title: '团队站会，同步本周进度', date: key(today), time: '09:30', note: '准备好项目周报', done: false, notified: true, createdAt: new Date().toISOString() },
     { id: crypto.randomUUID(), title: '提交季度总结报告', date: key(today), time: '14:00', note: '', done: false, notified: false, createdAt: new Date().toISOString() },
     { id: crypto.randomUUID(), title: '健身房锻炼 1 小时', date: key(today), time: '19:00', note: '有氧 + 上肢', done: false, notified: false, createdAt: new Date().toISOString() },
     { id: crypto.randomUUID(), title: '阅读《深度工作》第 4 章', date: key(today), time: null, note: '', done: true, notified: false, createdAt: new Date().toISOString() },
     { id: crypto.randomUUID(), title: '牙医复诊', date: key(tomorrow), time: '10:00', note: '带上医保卡', done: false, notified: false, createdAt: new Date().toISOString() },
+    { id: crypto.randomUUID(), title: '去取快递', date: key(inFiveDays), time: null, note: '小区菜鸟驿站', done: false, notified: false, createdAt: new Date().toISOString() },
+    { id: crypto.randomUUID(), title: '项目验收汇报', date: key(inTenDays), time: '15:00', note: '准备演示文稿', done: false, notified: false, createdAt: new Date().toISOString() },
     { id: crypto.randomUUID(), title: '回复客户邮件', date: key(yesterday), time: null, note: '已过期', done: false, notified: true, createdAt: new Date().toISOString() }
   ];
   save();

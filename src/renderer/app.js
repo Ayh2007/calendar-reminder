@@ -197,12 +197,103 @@ function renderPlans() {
       <div class="empty-title">${diff === 0 ? '今天还没有计划' : '这一天还没有计划'}</div>
       <div class="empty-desc">点击右上角“添加计划”开始安排</div>`;
     container.appendChild(empty);
-    return;
+  } else {
+    for (const plan of list) {
+      container.appendChild(buildPlanItem(plan, key, tKey));
+    }
   }
 
-  for (const plan of list) {
-    container.appendChild(buildPlanItem(plan, key, tKey));
+  // 今天面板额外显示即将到来的计划（倒计时提前提醒）
+  if (key === tKey) {
+    renderUpcoming(container, tKey);
   }
+}
+
+function renderUpcoming(container, tKey) {
+  const upcoming = state.plans
+    .filter((p) => !p.done && p.date > tKey)
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      const ta = a.time || '99:99';
+      const tb = b.time || '99:99';
+      return ta < tb ? -1 : 1;
+    });
+
+  if (upcoming.length === 0) return;
+
+  const divider = document.createElement('div');
+  divider.className = 'upcoming-divider';
+  divider.innerHTML = `<span>即将到来</span><span class="upcoming-count">${upcoming.length} 项</span>`;
+  container.appendChild(divider);
+
+  for (const plan of upcoming) {
+    container.appendChild(buildUpcomingItem(plan, tKey));
+  }
+}
+
+function buildUpcomingItem(plan, tKey) {
+  const days = diffDays(plan.date);
+  const d = parseKey(plan.date);
+
+  const item = document.createElement('div');
+  item.className = 'plan-item upcoming-item';
+  item.dataset.id = plan.id;
+
+  const dateBadge = document.createElement('div');
+  dateBadge.className = 'upcoming-date';
+  dateBadge.innerHTML = `<span class="ud-month">${d.getMonth() + 1}/${d.getDate()}</span><span class="ud-week">${weekdayLabel(d)}</span>`;
+  item.appendChild(dateBadge);
+
+  const body = document.createElement('div');
+  body.className = 'plan-body';
+
+  const title = document.createElement('div');
+  title.className = 'plan-title';
+  title.textContent = plan.title;
+  body.appendChild(title);
+
+  const meta = document.createElement('div');
+  meta.className = 'plan-meta';
+  if (plan.time) {
+    const timePill = document.createElement('span');
+    timePill.className = 'plan-time';
+    timePill.innerHTML = CLOCK_SVG + `<span>${plan.time}</span>`;
+    meta.appendChild(timePill);
+  }
+  const countdown = document.createElement('span');
+  countdown.className = 'countdown-badge';
+  countdown.textContent = days === 1 ? '明天' : days === 2 ? '后天' : `还有 ${days} 天`;
+  meta.appendChild(countdown);
+  body.appendChild(meta);
+
+  if (plan.note) {
+    const note = document.createElement('div');
+    note.className = 'plan-note';
+    note.textContent = plan.note;
+    body.appendChild(note);
+  }
+  item.appendChild(body);
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'plan-del';
+  del.title = '删除计划';
+  del.innerHTML = TRASH_SVG;
+  del.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removePlan(plan, item);
+  });
+  item.appendChild(del);
+
+  item.addEventListener('click', () => {
+    state.selected = plan.date;
+    const target = parseKey(plan.date);
+    state.cursor = new Date(target.getFullYear(), target.getMonth(), 1);
+    renderCalendar();
+    renderPlans();
+  });
+
+  return item;
 }
 
 const CHECK_SVG =
@@ -322,14 +413,49 @@ async function submitPlan() {
 }
 
 async function toggleDone(plan, itemEl) {
+  const wasDone = plan.done;
   const updated = await api.updatePlan(plan.id, { done: !plan.done });
   if (!updated) return;
   Object.assign(plan, updated);
-  // 勾选即时反馈，随后重排顺序
+  if (!wasDone) playSuccessSound();
   itemEl.style.animation = 'none';
   renderCalendar();
   renderPlans();
   api.refreshTray();
+}
+
+/* ================= 成功音效（Web Audio API 合成） ================= */
+
+let audioCtx = null;
+
+function playSuccessSound() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const notes = [
+      { freq: 523.25, start: 0,    dur: 0.12 }, // C5
+      { freq: 659.25, start: 0.10, dur: 0.12 }, // E5
+      { freq: 783.99, start: 0.20, dur: 0.18 }  // G5
+    ];
+
+    for (const n of notes) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = n.freq;
+      const t0 = ctx.currentTime + n.start;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.18, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + n.dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + n.dur + 0.05);
+    }
+  } catch (e) {
+    // 音频不可用则静默忽略
+  }
 }
 
 function removePlan(plan, itemEl) {
